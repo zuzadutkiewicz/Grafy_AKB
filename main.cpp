@@ -5,11 +5,15 @@
 #include <string.h>
 
 #define MAX_TAB 100
+#define MAX_MAC_ORYG 1000
 
 using namespace std;
 
 int macierz[MAX_TAB][MAX_TAB];
 int rozmMacierz = 0;
+
+int macierzOryg[MAX_MAC_ORYG][MAX_MAC_ORYG];
+int rozmMacierzOryg = 0;
 
 
 void odczytajZPliku(const char * nazwaPliku);
@@ -17,12 +21,16 @@ int czyJednograf();
 int sprawdzSprzez(int x, int y);
 int wybierzWierzcholki();
 int sprawdzLin(int x, int y);
+void przenumTab();
+void drukTab(int z, int k);
 
 int main()
 {
     odczytajZPliku("test.csv");
     czyJednograf();
     wybierzWierzcholki();
+    przenumTab();
+
     return 0;
 }
 
@@ -155,8 +163,9 @@ int wybierzWierzcholki()
             printf("Graf nie jest grafem liniowym. \n");
         }
 
-        return 1;
+
     }
+    return 1;
 }
 int sprawdzLin(int x,int y)
 {
@@ -176,4 +185,40 @@ int sprawdzLin(int x,int y)
         }
     }
     return 0;
+}
+
+void przenumTab()
+{
+    int z = 0;
+    int k = 0;
+    int n = 1;
+    for(z=0; z < rozmMacierz; z++)
+    {
+        for (k=0;  k < rozmMacierz; k++)
+        {
+            if (macierz[z][k] == 1)
+            {
+                macierz[z][k] = n++;
+             //   n++;
+            }
+
+        }
+    }
+    drukTab(z,k);
+}
+
+void drukTab(int z,int k)
+{
+    {
+        int z = 0;
+        int k = 0;
+
+        for(z=0; z < rozmMacierz; z++)
+        {
+            for (k=0;  k < rozmMacierz; k++)
+            {
+                printf ("macierz[%d][%d]=%d\n", z, k, macierz[z][k]);
+            }
+        }
+    }
 }
