@@ -1,9 +1,8 @@
 # depslib dependency file v1.0
-1446308681 source:c:\users\zuza\gitrepos\grafy_akb\main.cpp
+1446585701 source:c:\users\zuza\gitrepos\grafy_akb\main.cpp
 	<iostream>
 	<stdio.h>
-	<string.h>
-	<stdlib.h>
-	<conio.h>
 	<fstream>
+	<stdlib.h>
+	<string.h>
 
