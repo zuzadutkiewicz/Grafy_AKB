@@ -28,7 +28,8 @@ void wpiszWierzcholki(int x, int k);
 void drukTabOryg(int tryb);
 int poprzedniki(int kolumna, int listaPoprz[]);
 int nastepniki(int wiersz, int listaNast[]);
-
+int znajdzPoprzKraw(int wiersz);
+int znajdzNastKraw(int kolumna);
 
 int main()
 {
@@ -170,16 +171,15 @@ void przenumTab()
 {
     int n = 1;
 
-    for(int z=0; z < rozmMacierz; z++)
+    for(int w=0; w < rozmMacierz; w++)
     {
         for (int k=0;  k < rozmMacierz; k++)
         {
-            if (macierz[z][k] == 1)
-                macierz[z][k] = n++;
+            if (macierz[w][k] == 1)
+                macierz[w][k] = n++;
         }
     }
     rozmMacierzOryg = n-1;
-
 }
 
 
@@ -211,18 +211,64 @@ void wpiszWierzcholki(int w, int k)
             macierzOryg[listaPoprz[i]-1][wartosc-1] = 1;
     else
     {
-        macierzOryg[rozmMacierzOryg][wartosc-1] = 1;
-        rozmMacierzOryg++;
+        int kraw = znajdzPoprzKraw(w);
+        if(kraw > 0 )
+            macierzOryg[kraw-1][wartosc-1] = 1;
+        else
+        {
+            macierzOryg[rozmMacierzOryg][wartosc-1] = 1;
+            rozmMacierzOryg++;
+        }
     }
     if(liczbaNast > 0)
         for(int i = 0; i < liczbaNast; i++)
             macierzOryg[wartosc-1][listaNast[i]-1] = 1;
     else
     {
-        macierzOryg[wartosc-1][rozmMacierzOryg] = 1;
-        rozmMacierzOryg++;
+        int kraw = znajdzNastKraw(k);
+        if(kraw > 0)
+            macierzOryg[wartosc-1][kraw-1] = 1;
+        else
+        {
+            macierzOryg[wartosc-1][rozmMacierzOryg] = 1;
+            rozmMacierzOryg++;
+
+        }
     }
 }
+
+
+int znajdzNastKraw(int kolumna)
+{
+    for(int i=0; i < rozmMacierz; i++)
+    {
+        int kraw = macierz[i][kolumna];
+        if( kraw > 0)
+            for(int j = 0; j < rozmMacierzOryg; j++)
+            {
+                if( macierzOryg[kraw - 1][j] > 0)
+                    return j + 1;
+            }
+    }
+    return 0;
+}
+
+int znajdzPoprzKraw(int wiersz)
+{
+    for(int i=0; i < rozmMacierz; i++)
+    {
+        int kraw = macierz[wiersz][i];
+        if( kraw > 0)
+            for(int j = 0; j < rozmMacierzOryg; j++)
+            {
+                if( macierzOryg[j][kraw - 1] > 0)
+                    return j + 1;
+            }
+    }
+    return 0;
+}
+
+
 
 int poprzedniki(int kolumna, int listaPoprz[])
 {
@@ -236,6 +282,7 @@ int poprzedniki(int kolumna, int listaPoprz[])
         }
     return poprzedni;
 }
+
 
 int nastepniki(int wiersz, int listaNast[])
 {
