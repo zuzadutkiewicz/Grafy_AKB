@@ -36,6 +36,7 @@ int rozmMacierzOryg = 0;
 
 
 void odczytajZPliku(const char * nazwaPliku);
+void zapiszDoPliku(const char * nazwaPliku);
 int czyJednograf();
 int sprawdzSprzez(int x, int y);
 int czySprzez();
@@ -50,27 +51,38 @@ int nastepniki(int wiersz, int listaNast[]);
 int znajdzPoprzKraw(int wiersz);
 int znajdzNastKraw(int kolumna);
 
+const char* nazwaPlikuZrodlowego = "test.csv";
+const char* nazwaPlikuDocelowego = "testOryg.csv";
 int main()
 {
-    odczytajZPliku("test.csv");
+    odczytajZPliku(nazwaPlikuZrodlowego);
     czyJednograf();
     czySprzez();
     przenumTab();
     drukTab(1);
     generujGrafOryg();
     drukTabOryg(1);
+    zapiszDoPliku(nazwaPlikuDocelowego);
 
     return 0;
 }
 
+
 void odczytajZPliku(const char * nazwaPliku)
 {
     char buflicz[10];
+    int wiersz = 0;
+    int kolumna = 0;
+
     fstream plik;
     string line;
     plik.open(nazwaPliku, ios::in);
-    int wiersz = 0;
-    int kolumna = 0;
+    if(plik.good() != true)
+    {
+        printf("Nie mo¿na otworzyæ pliku %s", nazwaPliku);
+        exit(1);
+    }
+
     while(getline(plik,line))
     {
         const char * buf = line.c_str();
@@ -104,8 +116,30 @@ void odczytajZPliku(const char * nazwaPliku)
     //liczKolumn == linia;
     rozmMacierz = wiersz;
     plik.close();
-    printf("Odczyt z pliku zakonczony powodzeniem.\n");
+    printf("Odczyt z pliku %s zakonczony powodzeniem.\n", nazwaPliku);
 }
+
+
+void zapiszDoPliku(const char * nazwaPliku)
+{
+    fstream plik;
+    plik.open(nazwaPlikuDocelowego, ios::out);
+    char buf[500];
+    for(int w=0; w < rozmMacierzOryg; w++)
+    {
+        for (int k=0;  k < rozmMacierzOryg; k++)
+        {
+                if(k == 0)
+                    sprintf(buf,"%d", macierzOryg[w][k]);
+                else
+                    sprintf(buf,"%s\t%d", buf, macierzOryg[w][k]);
+        }
+        plik << buf << endl;
+    }
+    plik.close();
+    printf("Zapis danych do plik %s zakonczony powodzeniem.\n", nazwaPliku);
+}
+
 
 // sprawdz czy macierz zawiera inne liczby niz 0 lub 1
 // zwaracane wartosci
@@ -114,17 +148,18 @@ void odczytajZPliku(const char * nazwaPliku)
 
 int czyJednograf()
 {
-    for(int z=0; z < rozmMacierz; z++)
+    for(int w=0; w < rozmMacierz; w++)
         for (int k=0;  k < rozmMacierz; k++)
-            if (macierz[z][k] != 1 && macierz[z][k] != 0)
+            if (macierz[w][k] != 1 && macierz[w][k] != 0)
             {
-                printf("Podany graf nie jest 1-grafem. Kolumna: %d, wiersz %d\n", k,z);
+                printf("Podany graf nie jest 1-grafem. wiersz: %d, kolumna %d\n", w,k);
                 return 1;
             }
 
     printf("Podany graf jest 1-grafem.\n");
     return 0;
 }
+
 
 int sprawdzSprzez(int w1, int w2)
 {
@@ -146,6 +181,7 @@ int sprawdzSprzez(int w1, int w2)
 
     return 2;
 }
+
 
 int czySprzez()
 {
@@ -175,6 +211,8 @@ int czySprzez()
 
     return 1;
 }
+
+
 int sprawdzLin(int x,int y)
 {
     for (x = 0; x <rozmMacierz; x++)
@@ -318,6 +356,8 @@ int nastepniki(int wiersz, int listaNast[])
 
 void drukTab(int tryb)
 {
+    printf("\nMacierz sprzezona%s:\n", (tryb == 1 ? " (drukowane tylko elemnty != 0)": ""));
+    printf("rozmMacierz=%d\n", rozmMacierz);
     for(int w=0; w < rozmMacierz; w++)
         for (int k=0;  k < rozmMacierz; k++)
             if(tryb == 1)
@@ -332,6 +372,7 @@ void drukTab(int tryb)
 
 void drukTabOryg(int tryb)
 {
+    printf("\nMacierz oryginalna%s:\n", (tryb == 1 ? " (drukowane tylko elemnty != 0)": ""));
     printf("rozmMacierzOryg=%d\n", rozmMacierzOryg);
     for(int w=0; w < rozmMacierzOryg; w++)
         for (int k=0;  k < rozmMacierzOryg; k++)
