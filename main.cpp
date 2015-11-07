@@ -199,35 +199,41 @@ void drukTab()
 void generujGrafOryg()
 {
 
-    int z = 0;
+    int w = 0;
     int k = 0;
 
-    for(z=0; z < rozmMacierz; z++)
+    for(int w=0; w < rozmMacierz; z++)
     {
-        for (k=0;  k < rozmMacierz; k++)
+        for (int k=0;  k < rozmMacierz; k++)
         {
-            if(macierz[k][z] > 0)
-                wpiszWierzcholki(macierz[k][z], k);
+            if(macierz[k][w] > 0)
+                wpiszWierzcholki(z, w);
         }
     }
 }
 
-void wpiszWierzcholki(int x, int k)
+void wpiszWierzcholki(int z, int w)
 {
-    int poprzednik = czyIstniejePoprzednik(k);
-    int nastepnik  = czyIstniejeNastepnik(k);
+    int poprzednik = 0;
+    int nastepnik = 0;
+    int wartosc = 0;
+
+    poprzednik = czyIstniejePoprzednik(k);
+    nastepnik  = czyIstniejeNastepnik(w);
+    wartosc = macierz[k][w];
+
     if(poprzednik > 0)
-        macierzOryg[poprzednik-1][x-1] = 1;
+        macierzOryg[poprzednik-1][wartosc-1] = 1;
     else
     {
-        macierzOryg[rozmMacierzOryg][x-1] = 1;
+        macierzOryg[rozmMacierzOryg][wartosc-1] = 1;
         rozmMacierzOryg++;
     }
     if(nastepnik > 0)
-        macierzOryg[x-1][nastepnik-1] = 1;
+        macierzOryg[wartosc-1][nastepnik-1] = 1;
     else
     {
-        macierzOryg[x-1][rozmMacierzOryg] = 1;
+        macierzOryg[wartosc-1][rozmMacierzOryg] = 1;
         rozmMacierzOryg++;
     }
 }
@@ -237,8 +243,8 @@ int czyIstniejePoprzednik(int kolumna)
     int i = 0;
     for(i=0; i < rozmMacierz; i++)
     {
-        if( macierz[kolumna][i] > 0 )
-            return macierz[kolumna][i];
+        if( macierz[i][kolumna] > 0 )
+            return macierz[i][kolumna];
     }
     return 0;
 }
@@ -248,8 +254,8 @@ int czyIstniejeNastepnik(int wiersz)
     int i = 0;
     for(i=0; i < rozmMacierz; i++)
     {
-        if( macierz[i][wiersz] > 0 )
-            return macierz[i][wiersz];
+        if( macierz[wiersz][i] > 0 )
+            return macierz[wiersz][i];
     }
     return 0;
 
