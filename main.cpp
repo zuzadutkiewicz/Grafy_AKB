@@ -22,22 +22,23 @@ int sprawdzSprzez(int x, int y);
 int czySprzez();
 int sprawdzLin(int x, int y);
 void przenumTab();
-void drukTab();
+void drukTab(int tryb);
 void generujGrafOryg();
 void wpiszWierzcholki(int x, int k);
-void drukTabOryg();
+void drukTabOryg(int tryb);
 int czyIstniejePoprzednik(int kolumna);
 int czyIstniejeNastepnik(int wiersz);
 
 
 int main()
 {
-    odczytajZPliku("c:/workcpacecodeb/Grafy_AKB/test.csv");
+    odczytajZPliku("test.csv");
     czyJednograf();
     czySprzez();
     przenumTab();
+    drukTab(1);
     generujGrafOryg();
-    drukTabOryg();
+    drukTabOryg(1);
 
     return 0;
 }
@@ -48,7 +49,7 @@ void odczytajZPliku(const char * nazwaPliku)
     fstream plik;
     string line;
     plik.open(nazwaPliku, ios::in);
-    int linia = 0;
+    int wiersz = 0;
     int kolumna = 0;
     while(getline(plik,line))
     {
@@ -56,7 +57,7 @@ void odczytajZPliku(const char * nazwaPliku)
         int i = 0;
         int j = 0;
         //int liczKolumn = 0;
-        linia++;
+        wiersz++;
         while(true)
         {
             if(buf[i] != '\t' && buf[i] !='\0')
@@ -70,8 +71,7 @@ void odczytajZPliku(const char * nazwaPliku)
                 kolumna++;
                 buflicz[j] = '\0';
                 dana = atoi(buflicz);
-                macierz[linia-1][kolumna-1] = dana;
-                printf("linia: %d kolumna: %d liczba: %d\n", linia, kolumna, dana);
+                macierz[wiersz-1][kolumna-1] = dana;
                 j = 0;
             }
             if(buf[i] == '\0')
@@ -82,7 +82,7 @@ void odczytajZPliku(const char * nazwaPliku)
         kolumna = 0;
     }
     //liczKolumn == linia;
-    rozmMacierz = linia;
+    rozmMacierz = wiersz;
     plik.close();
     printf("Odczyt z pliku zakonczony powodzeniem.\n");
 }
@@ -106,18 +106,18 @@ int czyJednograf()
     return 0;
 }
 
-int sprawdzSprzez(int x, int y)
+int sprawdzSprzez(int w1, int w2)
 {
     int znaczRoz = 0;
     int znaczIden = 0;
-    int z = 0;
-    for (z =0; z < rozmMacierz; z ++)
-        if ((macierz[x][z] == 0 && macierz[y][z] == 1))
+
+    for (int k =0; k < rozmMacierz; k ++)
+        if ((macierz[w1][k] == 0 && macierz[w2][k] == 1))
             znaczRoz = 1;
-        else if (macierz[x][z] == 1 && macierz[y][z] == 0)
+        else if (macierz[w1][k] == 1 && macierz[w2][k] == 0)
             znaczRoz = 1;
-        else if (macierz[x][z] == 1 && macierz[y][z] == 1)
-             znaczIden = 1;
+        else if (macierz[w1][k] == 1 && macierz[w2][k] == 1)
+            znaczIden = 1;
 
     if(znaczIden == 1 && znaczRoz == 1)
         return 0;
@@ -150,7 +150,7 @@ int czySprzez()
     printf("Graf jest grafem sprzezonym. \n");
     if (lx == 0)
         printf("Graf jest liniowy. \n");
-     else if (lx == 1)
+    else if (lx == 1)
         printf("Graf nie jest grafem liniowym. \n");
 
     return 1;
@@ -179,48 +179,29 @@ void przenumTab()
         }
     }
     rozmMacierzOryg = n-1;
-    drukTab();
+
 }
 
-
-void drukTab()
-{
-    int z = 0;
-    int k = 0;
-    for(z=0; z < rozmMacierz; z++)
-    {
-        for (k=0;  k < rozmMacierz; k++)
-        {
-            printf ("macierz[%d][%d]=%d\n", z, k, macierz[z][k]);
-        }
-    }
-}
 
 void generujGrafOryg()
 {
+    for(int w=0; w < rozmMacierz; w++)
 
-    int w = 0;
-    int k = 0;
-
-    for(int w=0; w < rozmMacierz; z++)
-    {
         for (int k=0;  k < rozmMacierz; k++)
-        {
-            if(macierz[k][w] > 0)
-                wpiszWierzcholki(z, w);
-        }
-    }
+            if(macierz[w][k] > 0)
+                wpiszWierzcholki(w, k);
+
 }
 
-void wpiszWierzcholki(int z, int w)
+void wpiszWierzcholki(int w, int k)
 {
     int poprzednik = 0;
     int nastepnik = 0;
     int wartosc = 0;
 
-    poprzednik = czyIstniejePoprzednik(k);
-    nastepnik  = czyIstniejeNastepnik(w);
-    wartosc = macierz[k][w];
+    poprzednik = czyIstniejePoprzednik(w);
+    nastepnik  = czyIstniejeNastepnik(k);
+    wartosc = macierz[w][k];
 
     if(poprzednik > 0)
         macierzOryg[poprzednik-1][wartosc-1] = 1;
@@ -242,10 +223,9 @@ int czyIstniejePoprzednik(int kolumna)
 {
     int i = 0;
     for(i=0; i < rozmMacierz; i++)
-    {
         if( macierz[i][kolumna] > 0 )
             return macierz[i][kolumna];
-    }
+
     return 0;
 }
 
@@ -253,24 +233,36 @@ int czyIstniejeNastepnik(int wiersz)
 {
     int i = 0;
     for(i=0; i < rozmMacierz; i++)
-    {
         if( macierz[wiersz][i] > 0 )
             return macierz[wiersz][i];
-    }
-    return 0;
 
+    return 0;
 }
 
-void drukTabOryg()
+void drukTab(int tryb)
 {
-    int z = 0;
-    int k = 0;
+    for(int w=0; w < rozmMacierz; w++)
+        for (int k=0;  k < rozmMacierz; k++)
+            if(tryb == 1)
+            {
+                if(macierz[w][k] != 0)
+                    printf ("macierz[%d][%d]=%d\n", w, k, macierz[w][k]);
+            }
+            else
+                printf ("macierz[%d][%d]=%d\n", w, k, macierz[w][k]);
+}
+
+
+void drukTabOryg(int tryb)
+{
     printf("rozmMacierzOryg=%d\n", rozmMacierzOryg);
-    for(z=0; z < rozmMacierzOryg; z++)
-    {
-        for (k=0;  k < rozmMacierzOryg; k++)
-        {
-            printf ("macierzOryg[%d][%d]=%d\n", z, k, macierzOryg[z][k]);
-        }
-    }
+    for(int w=0; w < rozmMacierzOryg; w++)
+        for (int k=0;  k < rozmMacierzOryg; k++)
+            if(tryb == 1)
+            {
+                if(macierzOryg[w][k] != 0)
+                    printf ("macierzOryg[%d][%d]=%d\n", w, k, macierzOryg[w][k]);
+            }
+            else
+                printf ("macierzOryg[%d][%d]=%d\n", w, k, macierzOryg[w][k]);
 }
