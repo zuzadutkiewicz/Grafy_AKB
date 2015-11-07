@@ -26,8 +26,8 @@ void drukTab(int tryb);
 void generujGrafOryg();
 void wpiszWierzcholki(int x, int k);
 void drukTabOryg(int tryb);
-int czyIstniejePoprzednik(int kolumna);
-int czyIstniejeNastepnik(int wiersz);
+int poprzedniki(int kolumna, int listaPoprz[]);
+int nastepniki(int wiersz, int listaNast[]);
 
 
 int main()
@@ -195,23 +195,28 @@ void generujGrafOryg()
 
 void wpiszWierzcholki(int w, int k)
 {
-    int poprzednik = 0;
-    int nastepnik = 0;
+    int listaPoprz[MAX_TAB];
+    int listaNast[MAX_TAB];
+    int liczbaPoprz = 0;
+    int liczbaNast = 0;
     int wartosc = 0;
 
-    poprzednik = czyIstniejePoprzednik(w);
-    nastepnik  = czyIstniejeNastepnik(k);
+    liczbaPoprz = poprzedniki(w, listaPoprz);
+    liczbaNast  = nastepniki(k, listaNast);
+
     wartosc = macierz[w][k];
 
-    if(poprzednik > 0)
-        macierzOryg[poprzednik-1][wartosc-1] = 1;
+    if(liczbaPoprz > 0)
+        for(int i = 0; i < liczbaPoprz; i++)
+            macierzOryg[listaPoprz[i]-1][wartosc-1] = 1;
     else
     {
         macierzOryg[rozmMacierzOryg][wartosc-1] = 1;
         rozmMacierzOryg++;
     }
-    if(nastepnik > 0)
-        macierzOryg[wartosc-1][nastepnik-1] = 1;
+    if(liczbaNast > 0)
+        for(int i = 0; i < liczbaNast; i++)
+            macierzOryg[wartosc-1][listaNast[i]-1] = 1;
     else
     {
         macierzOryg[wartosc-1][rozmMacierzOryg] = 1;
@@ -219,24 +224,30 @@ void wpiszWierzcholki(int w, int k)
     }
 }
 
-int czyIstniejePoprzednik(int kolumna)
+int poprzedniki(int kolumna, int listaPoprz[])
 {
-    int i = 0;
-    for(i=0; i < rozmMacierz; i++)
-        if( macierz[i][kolumna] > 0 )
-            return macierz[i][kolumna];
+    int poprzedni = 0;
 
-    return 0;
+    for(int i=0; i < rozmMacierz; i++)
+        if( macierz[i][kolumna] > 0 )
+        {
+            listaPoprz[poprzedni] = macierz[i][kolumna];
+            poprzedni++;
+        }
+    return poprzedni;
 }
 
-int czyIstniejeNastepnik(int wiersz)
+int nastepniki(int wiersz, int listaNast[])
 {
-    int i = 0;
-    for(i=0; i < rozmMacierz; i++)
+    int nastepny = 0;
+    for(int i=0; i < rozmMacierz; i++)
         if( macierz[wiersz][i] > 0 )
-            return macierz[wiersz][i];
+        {
+            listaNast[nastepny] = macierz[wiersz][i];
+            nastepny++;
+        }
 
-    return 0;
+    return nastepny;
 }
 
 void drukTab(int tryb)
