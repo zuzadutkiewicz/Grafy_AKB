@@ -1,5 +1,5 @@
 /*
-Check adjoint graph and generate source graph based on adjoint graph.
+Load, check adjoint graph and generate source graph based on adjoint graph.
 Copyright (C) 2015  Zuzanna Dutkiewicz
 
 This program is free software; you can redistribute it and/or
