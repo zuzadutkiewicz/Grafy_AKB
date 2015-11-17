@@ -55,9 +55,15 @@ const char* nazwaPlikuZrodlowego = "test.csv";
 const char* nazwaPlikuDocelowego = "testOryg.csv";
 int main()
 {
+    int ret = 0;
+    int ret1 = 0;
     odczytajZPliku(nazwaPlikuZrodlowego);
-    czyJednograf();
-    czySprzez();
+    ret = czyJednograf();
+    if (ret == 1)
+        exit(1);
+    ret1 = czySprzez();
+    if(ret1 == 0)
+        exit(1);
     przenumTab();
     drukTab(1);
     generujGrafOryg();
@@ -79,7 +85,7 @@ void odczytajZPliku(const char * nazwaPliku)
     plik.open(nazwaPliku, ios::in);
     if(plik.good() != true)
     {
-        printf("Nie mo¿na otworzyæ pliku %s", nazwaPliku);
+        printf("Nie mozna otworzyc pliku %s", nazwaPliku);
         exit(1);
     }
 
@@ -124,7 +130,7 @@ void zapiszDoPliku(const char * nazwaPliku)
 {
     fstream plik;
     plik.open(nazwaPlikuDocelowego, ios::out);
-    char buf[500];
+    char buf[MAX_TAB *3];
     for(int w=0; w < rozmMacierzOryg; w++)
     {
         for (int k=0;  k < rozmMacierzOryg; k++)
@@ -224,6 +230,7 @@ int sprawdzLin(int x,int y)
 }
 
 
+// nadanie kazdej krawdzi numer od 1
 void przenumTab()
 {
     int n = 1;
@@ -262,12 +269,15 @@ void wpiszWierzcholki(int w, int k)
     liczbaNast  = nastepniki(k, listaNast);
 
     wartosc = macierz[w][k];
-
+//jezeli istnieja poprzedniki
+//wpisanie do macierzy poprzednikow
     if(liczbaPoprz > 0)
         for(int i = 0; i < liczbaPoprz; i++)
             macierzOryg[listaPoprz[i]-1][wartosc-1] = 1;
     else
     {
+        //znajdowanie poprzedniej krawedzi grafu oryginalnego
+        //zwraca numer krawedzi dla grafu sprzezonego dlatego -1
         int kraw = znajdzPoprzKraw(w);
         if(kraw > 0 )
             macierzOryg[kraw-1][wartosc-1] = 1;
@@ -277,6 +287,8 @@ void wpiszWierzcholki(int w, int k)
             rozmMacierzOryg++;
         }
     }
+    //jezli istnieja nastepniki
+    //wpisanie nastepnikow do macierzy
     if(liczbaNast > 0)
         for(int i = 0; i < liczbaNast; i++)
             macierzOryg[wartosc-1][listaNast[i]-1] = 1;
@@ -297,6 +309,7 @@ void wpiszWierzcholki(int w, int k)
 
 int znajdzNastKraw(int kolumna)
 {
+    //i jest wierszem, kolumny sa wpisywane
     for(int i=0; i < rozmMacierz; i++)
     {
         int kraw = macierz[i][kolumna];
@@ -312,6 +325,7 @@ int znajdzNastKraw(int kolumna)
 
 int znajdzPoprzKraw(int wiersz)
 {
+    //przeglada miecierz po wierszach
     for(int i=0; i < rozmMacierz; i++)
     {
         int kraw = macierz[wiersz][i];
