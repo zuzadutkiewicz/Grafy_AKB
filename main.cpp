@@ -31,6 +31,12 @@ using namespace std;
 int macierz[MAX_TAB][MAX_TAB];
 int rozmMacierz = 0;
 
+typedef struct element
+{
+    int poczatek;
+    int koniec;
+} Element;
+
 int macierzOryg[MAX_MAC_ORYG][MAX_MAC_ORYG];
 int rozmMacierzOryg = 0;
 
@@ -44,15 +50,19 @@ int sprawdzLin(int x, int y);
 void przenumTab();
 void drukTab(int tryb);
 void generujGrafOryg();
-void wpiszWierzcholki(int x, int k);
+void wpiszWierzcholki(int x);
 void drukTabOryg(int tryb);
-int poprzedniki(int kolumna, int listaPoprz[]);
-int nastepniki(int wiersz, int listaNast[]);
-int znajdzPoprzKraw(int wiersz);
-int znajdzNastKraw(int kolumna);
+int poprzedniki(int wierzcholek, int listaPoprz[]);
+int nastepniki(int wierzcholek, int listaNast[]);
+int ustawPoprzedniki(int rozMacierzPom, int punkt, Element macierzOrygPom[], int liczbaPoprz, int listaPoprz[]);
+int ustawNastepniki (int rozMacierzPom, int punkt, Element macierzOrygPom[], int liczbaNast, int listaNast[]);
+void drukujMacierzPom(int tryb, int rozMacierzPom, Element macierzOrygPom[]);
+void macierzPomDoOryg(Element macierzPom[]);
 
 const char* nazwaPlikuZrodlowego = "test.csv";
 const char* nazwaPlikuDocelowego = "testOryg.csv";
+
+
 int main()
 {
     int ret = 0;
@@ -64,7 +74,6 @@ int main()
     ret1 = czySprzez();
     if(ret1 == 0)
         exit(1);
-    przenumTab();
     drukTab(1);
     generujGrafOryg();
     drukTabOryg(1);
@@ -135,10 +144,10 @@ void zapiszDoPliku(const char * nazwaPliku)
     {
         for (int k=0;  k < rozmMacierzOryg; k++)
         {
-                if(k == 0)
-                    sprintf(buf,"%d", macierzOryg[w][k]);
-                else
-                    sprintf(buf,"%s\t%d", buf, macierzOryg[w][k]);
+            if(k == 0)
+                sprintf(buf,"%d", macierzOryg[w][k]);
+            else
+                sprintf(buf,"%s\t%d", buf, macierzOryg[w][k]);
         }
         plik << buf << endl;
     }
@@ -230,138 +239,181 @@ int sprawdzLin(int x,int y)
 }
 
 
-// nadanie kazdej krawdzi numer od 1
-void przenumTab()
-{
-    int n = 1;
 
-    for(int w=0; w < rozmMacierz; w++)
-    {
-        for (int k=0;  k < rozmMacierz; k++)
-        {
-            if (macierz[w][k] == 1)
-                macierz[w][k] = n++;
-        }
-    }
-    rozmMacierzOryg = n-1;
-}
 
 
 void generujGrafOryg()
 {
-    for(int w=0; w < rozmMacierz; w++)
+    Element macierzPom[MAX_MAC_ORYG];
+    int rozMacierzPom = 0;
 
-        for (int k=0;  k < rozmMacierz; k++)
-            if(macierz[w][k] > 0)
-                wpiszWierzcholki(w, k);
+    int listaPoprz[MAX_MAC_ORYG];
+    int listaNast[MAX_MAC_ORYG];
+
+    // ustawienie macierzy pomocniczej
+    for(int punkt = 0; punkt < rozmMacierz; punkt++)
+    {
+        macierzPom[punkt].poczatek = -1;
+        macierzPom[punkt].koniec = -1;
+    }
+
+
+    for(int punkt = 0; punkt < rozmMacierz; punkt++)
+    {
+        int liczbaPoprz = poprzedniki(punkt, listaPoprz);
+        int liczbaNast  = nastepniki(punkt, listaNast);
+
+        if(liczbaPoprz > 0)
+            rozMacierzPom = ustawPoprzedniki(rozMacierzPom, punkt, macierzPom, liczbaPoprz, listaPoprz);
+
+        if(liczbaNast > 0)
+            rozMacierzPom = ustawNastepniki(rozMacierzPom, punkt, macierzPom, liczbaNast, listaNast);
+
+        if(liczbaPoprz > 0 && liczbaNast == 0 && macierzPom[punkt].koniec == -1)
+        {
+            macierzPom[punkt].koniec = rozMacierzPom;
+            rozMacierzPom++;
+        }
+
+                if(liczbaPoprz == 0 && liczbaNast > 0 && macierzPom[punkt].poczatek == -1)
+        {
+            macierzPom[punkt].poczatek = rozMacierzPom;
+            rozMacierzPom++;
+        }
+
+    }
+
+    drukujMacierzPom(1, rozMacierzPom, macierzPom);
+
+    macierzPomDoOryg(macierzPom);
 
 }
 
-void wpiszWierzcholki(int w, int k)
+
+void macierzPomDoOryg(Element macierzPom[])
 {
-    int listaPoprz[MAX_TAB];
-    int listaNast[MAX_TAB];
-    int liczbaPoprz = 0;
-    int liczbaNast = 0;
-    int wartosc = 0;
-
-    liczbaPoprz = poprzedniki(w, listaPoprz);
-    liczbaNast  = nastepniki(k, listaNast);
-
-    wartosc = macierz[w][k];
-//jezeli istnieja poprzedniki
-//wpisanie do macierzy poprzednikow
-    if(liczbaPoprz > 0)
-        for(int i = 0; i < liczbaPoprz; i++)
-            macierzOryg[listaPoprz[i]-1][wartosc-1] = 1;
-    else
+    for(int punkt = 0; punkt < rozmMacierz; punkt++)
     {
-        //znajdowanie poprzedniej krawedzi grafu oryginalnego
-        //zwraca numer krawedzi dla grafu sprzezonego dlatego -1
-        int kraw = znajdzPoprzKraw(w);
-        if(kraw > 0 )
-            macierzOryg[kraw-1][wartosc-1] = 1;
-        else
+        int pocz = macierzPom[punkt].poczatek;
+        int kon = macierzPom[punkt].koniec;
+        if( pocz != -1 &&  kon != -1)
         {
-            macierzOryg[rozmMacierzOryg][wartosc-1] = 1;
-            rozmMacierzOryg++;
+            macierzOryg[pocz][kon] = 1;
+            rozmMacierzOryg = rozmMacierzOryg < pocz ? pocz : rozmMacierzOryg;
+            rozmMacierzOryg = rozmMacierzOryg < kon  ? kon  : rozmMacierzOryg;
         }
     }
-    //jezli istnieja nastepniki
-    //wpisanie nastepnikow do macierzy
-    if(liczbaNast > 0)
-        for(int i = 0; i < liczbaNast; i++)
-            macierzOryg[wartosc-1][listaNast[i]-1] = 1;
-    else
-    {
-        int kraw = znajdzNastKraw(k);
-        if(kraw > 0)
-            macierzOryg[wartosc-1][kraw-1] = 1;
-        else
-        {
-            macierzOryg[wartosc-1][rozmMacierzOryg] = 1;
-            rozmMacierzOryg++;
+    rozmMacierzOryg++;
+}
 
+
+void drukujMacierzPom(int tryb, int rozMacierzPom, Element macierzPom[])
+{
+    printf("**** Drukowanie macierzy pomocniczej. ****\n");
+    printf("Rozmiar macierz=%d\n", rozmMacierz);
+    printf("Rozmiar macierzy pomocniczej=%d\n", rozMacierzPom);
+
+    for(int punkt = 0; punkt < rozmMacierz; punkt++)
+        if(tryb == 1)
+        {
+            if(macierzPom[punkt].poczatek != -1 || macierzPom[punkt].koniec != -1)
+                printf("macierzPom[%d] poczatek=%d koniec=%d\n",punkt, macierzPom[punkt].poczatek, macierzPom[punkt].koniec);
+        }
+        else
+            printf("macierzPom[%d] poczatek=%d koniec=%d\n",punkt, macierzPom[punkt].poczatek, macierzPom[punkt].koniec);
+
+}
+
+
+int ustawPoprzedniki(int rozMacierzPom, int punkt, Element maOrygPom[], int lbPop, int lsPop[])
+{
+    int wartElem = maOrygPom[punkt].poczatek;
+
+    for(int elem = 0; elem < lbPop; elem++)
+    {
+        int wartKol = maOrygPom[lsPop[elem]].koniec;
+
+        if(wartElem == -1 && wartKol != -1)
+            wartElem = wartKol;
+        else if(wartElem != -1 && wartKol != -1 && wartElem != wartKol)
+        {
+            printf("Niepoprawna wartosc wartElem=%d wartKol=%d indeks maOrygPom(lsPop[elem])=%d.\n", wartElem, wartKol, lsPop[elem]);
+            printf("Przerywam dzialanie programu\n");
+            exit(1);
         }
     }
-}
 
-
-int znajdzNastKraw(int kolumna)
-{
-    //i jest wierszem, kolumny sa wpisywane
-    for(int i=0; i < rozmMacierz; i++)
+    // wypelnienie odpowiednia wartoscia tablicy elementow
+    if(wartElem == -1)
     {
-        int kraw = macierz[i][kolumna];
-        if( kraw > 0)
-            for(int j = 0; j < rozmMacierzOryg; j++)
-            {
-                if( macierzOryg[kraw - 1][j] > 0)
-                    return j + 1;
-            }
+        wartElem = rozMacierzPom;
+        rozMacierzPom++;
     }
-    return 0;
+
+    maOrygPom[punkt].poczatek = wartElem;
+
+    for(int elem = 0; elem < lbPop; elem++)
+        maOrygPom[lsPop[elem]].koniec = wartElem;
+
+    return rozMacierzPom;
 }
 
-int znajdzPoprzKraw(int wiersz)
+
+int ustawNastepniki(int rozMacierzPom, int pkt, Element maOrygPom[], int lbNa, int lsNa[])
 {
-    //przeglada miecierz po wierszach
-    for(int i=0; i < rozmMacierz; i++)
+    int wartElem = maOrygPom[pkt].koniec;
+
+    // szukaj wartosci nastepnika
+    for(int elem = 0; elem < lbNa; elem++)
     {
-        int kraw = macierz[wiersz][i];
-        if( kraw > 0)
-            for(int j = 0; j < rozmMacierzOryg; j++)
-            {
-                if( macierzOryg[j][kraw - 1] > 0)
-                    return j + 1;
-            }
+        if(wartElem == -1 && maOrygPom[lsNa[elem]].poczatek != -1)
+            wartElem = maOrygPom[lsNa[elem]].poczatek;
+        else if(wartElem != -1 && maOrygPom[lsNa[elem]].poczatek != -1 && wartElem != maOrygPom[lsNa[elem]].poczatek)
+        {
+            printf("Niepoprawna wartosc wartElem=%d maOrygPo[lsNa[el]].poczatek=%d indeks maOrygPom(listaNast[elem])=%d.\n", wartElem, maOrygPom[lsNa[elem]].poczatek, lsNa[elem]);
+            printf("Przerywam dzialanie programu.\n");
+            exit(1);
+        }
     }
-    return 0;
+
+    // wypelnienie odpowiednia wartoscia tablicy elementow
+    if(wartElem == -1)
+    {
+        wartElem = rozMacierzPom;
+        rozMacierzPom++;
+    }
+
+    maOrygPom[pkt].koniec = wartElem;
+
+    for(int elem = 0; elem < lbNa; elem++)
+        maOrygPom[lsNa[elem]].poczatek = wartElem;
+
+    return rozMacierzPom;
+
 }
 
 
-
-int poprzedniki(int kolumna, int listaPoprz[])
+int poprzedniki(int wierzcholek, int listaPoprz[])
 {
     int poprzedni = 0;
 
     for(int i=0; i < rozmMacierz; i++)
-        if( macierz[i][kolumna] > 0 )
+        if( macierz[i][wierzcholek] > 0 )
         {
-            listaPoprz[poprzedni] = macierz[i][kolumna];
+            listaPoprz[poprzedni] = i;
             poprzedni++;
         }
     return poprzedni;
 }
 
 
-int nastepniki(int wiersz, int listaNast[])
+int nastepniki(int wierzcholek, int listaNast[])
 {
     int nastepny = 0;
     for(int i=0; i < rozmMacierz; i++)
-        if( macierz[wiersz][i] > 0 )
+        if( macierz[wierzcholek][i] > 0 )
         {
-            listaNast[nastepny] = macierz[wiersz][i];
+            listaNast[nastepny] = i;
             nastepny++;
         }
 
@@ -377,7 +429,7 @@ void drukTab(int tryb)
             if(tryb == 1)
             {
                 if(macierz[w][k] != 0)
-                    printf ("macierz[%d][%d]=%d\n", w, k, macierz[w][k]);
+                    printf ("macierz[%d][%d]=%d\n", w, k, macierz[w][k] - 1);
             }
             else
                 printf ("macierz[%d][%d]=%d\n", w, k, macierz[w][k]);
