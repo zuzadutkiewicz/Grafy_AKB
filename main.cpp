@@ -37,6 +37,9 @@ typedef struct element
     int koniec;
 } Element;
 
+Element macierzPom[MAX_MAC_ORYG];
+int rozMacierzPom = 0;
+
 int macierzOryg[MAX_MAC_ORYG][MAX_MAC_ORYG];
 int rozmMacierzOryg = 0;
 
@@ -54,10 +57,10 @@ void wpiszWierzcholki(int x);
 void drukTabOryg(int tryb);
 int poprzedniki(int wierzcholek, int listaPoprz[]);
 int nastepniki(int wierzcholek, int listaNast[]);
-int ustawPoprzedniki(int rozMacierzPom, int punkt, Element macierzOrygPom[], int liczbaPoprz, int listaPoprz[]);
-int ustawNastepniki (int rozMacierzPom, int punkt, Element macierzOrygPom[], int liczbaNast, int listaNast[]);
-void drukujMacierzPom(int tryb, int rozMacierzPom, Element macierzOrygPom[]);
-void macierzPomDoOryg(Element macierzPom[]);
+int ustawPoprzedniki(int punkt, int liczbaPoprz, int listaPoprz[]);
+int ustawNastepniki (int punkt, int liczbaNast, int listaNast[]);
+void drukujMacierzPom(int tryb);
+void macierzPomDoOryg();
 
 const char* nazwaPlikuZrodlowego = "test.csv";
 const char* nazwaPlikuDocelowego = "testOryg.csv";
@@ -68,13 +71,13 @@ int main()
     int ret = 0;
     int ret1 = 0;
     odczytajZPliku(nazwaPlikuZrodlowego);
+    drukTab(1);
     ret = czyJednograf();
     if (ret == 1)
         exit(1);
     ret1 = czySprzez();
     if(ret1 == 0)
         exit(1);
-    drukTab(1);
     generujGrafOryg();
     drukTabOryg(1);
     zapiszDoPliku(nazwaPlikuDocelowego);
@@ -244,9 +247,6 @@ int sprawdzLin(int x,int y)
 
 void generujGrafOryg()
 {
-    Element macierzPom[MAX_MAC_ORYG];
-    int rozMacierzPom = 0;
-
     int listaPoprz[MAX_MAC_ORYG];
     int listaNast[MAX_MAC_ORYG];
 
@@ -264,18 +264,17 @@ void generujGrafOryg()
         int liczbaNast  = nastepniki(punkt, listaNast);
 
         if(liczbaPoprz > 0)
-            rozMacierzPom = ustawPoprzedniki(rozMacierzPom, punkt, macierzPom, liczbaPoprz, listaPoprz);
+            rozMacierzPom = ustawPoprzedniki( punkt,  liczbaPoprz, listaPoprz);
 
         if(liczbaNast > 0)
-            rozMacierzPom = ustawNastepniki(rozMacierzPom, punkt, macierzPom, liczbaNast, listaNast);
+            rozMacierzPom = ustawNastepniki( punkt,  liczbaNast, listaNast);
 
         if(liczbaPoprz > 0 && liczbaNast == 0 && macierzPom[punkt].koniec == -1)
         {
             macierzPom[punkt].koniec = rozMacierzPom;
             rozMacierzPom++;
         }
-
-                if(liczbaPoprz == 0 && liczbaNast > 0 && macierzPom[punkt].poczatek == -1)
+        if(liczbaPoprz == 0 && liczbaNast > 0 && macierzPom[punkt].poczatek == -1)
         {
             macierzPom[punkt].poczatek = rozMacierzPom;
             rozMacierzPom++;
@@ -283,14 +282,14 @@ void generujGrafOryg()
 
     }
 
-    drukujMacierzPom(1, rozMacierzPom, macierzPom);
+    drukujMacierzPom(1);
 
-    macierzPomDoOryg(macierzPom);
+    macierzPomDoOryg();
 
 }
 
 
-void macierzPomDoOryg(Element macierzPom[])
+void macierzPomDoOryg()
 {
     for(int punkt = 0; punkt < rozmMacierz; punkt++)
     {
@@ -298,7 +297,7 @@ void macierzPomDoOryg(Element macierzPom[])
         int kon = macierzPom[punkt].koniec;
         if( pocz != -1 &&  kon != -1)
         {
-            macierzOryg[pocz][kon] = 1;
+            macierzOryg[pocz][kon] = macierzOryg[pocz][kon] + 1;
             rozmMacierzOryg = rozmMacierzOryg < pocz ? pocz : rozmMacierzOryg;
             rozmMacierzOryg = rozmMacierzOryg < kon  ? kon  : rozmMacierzOryg;
         }
@@ -307,7 +306,7 @@ void macierzPomDoOryg(Element macierzPom[])
 }
 
 
-void drukujMacierzPom(int tryb, int rozMacierzPom, Element macierzPom[])
+void drukujMacierzPom(int tryb)
 {
     printf("**** Drukowanie macierzy pomocniczej. ****\n");
     printf("Rozmiar macierz=%d\n", rozmMacierz);
@@ -317,27 +316,27 @@ void drukujMacierzPom(int tryb, int rozMacierzPom, Element macierzPom[])
         if(tryb == 1)
         {
             if(macierzPom[punkt].poczatek != -1 || macierzPom[punkt].koniec != -1)
-                printf("macierzPom[%d] poczatek=%d koniec=%d\n",punkt, macierzPom[punkt].poczatek, macierzPom[punkt].koniec);
+                printf(" %d -> %c -> %d\n", macierzPom[punkt].poczatek,punkt + 'A', macierzPom[punkt].koniec);
         }
         else
-            printf("macierzPom[%d] poczatek=%d koniec=%d\n",punkt, macierzPom[punkt].poczatek, macierzPom[punkt].koniec);
+            printf(" %c -> [%d,%d]\n",punkt + 'A', macierzPom[punkt].poczatek, macierzPom[punkt].koniec);
 
 }
 
 
-int ustawPoprzedniki(int rozMacierzPom, int punkt, Element maOrygPom[], int lbPop, int lsPop[])
+int ustawPoprzedniki(int pkt, int lbPop, int lsPop[])
 {
-    int wartElem = maOrygPom[punkt].poczatek;
+    int wartElem = macierzPom[pkt].poczatek;
 
     for(int elem = 0; elem < lbPop; elem++)
     {
-        int wartKol = maOrygPom[lsPop[elem]].koniec;
+        int wartKol = macierzPom[lsPop[elem]].koniec;
 
         if(wartElem == -1 && wartKol != -1)
             wartElem = wartKol;
         else if(wartElem != -1 && wartKol != -1 && wartElem != wartKol)
         {
-            printf("Niepoprawna wartosc wartElem=%d wartKol=%d indeks maOrygPom(lsPop[elem])=%d.\n", wartElem, wartKol, lsPop[elem]);
+            printf("Niepoprawna wartosc wartElem=%d wartKol=%d indeks macierzPom(lsPop[elem])=%d.\n", wartElem, wartKol, lsPop[elem]);
             printf("Przerywam dzialanie programu\n");
             exit(1);
         }
@@ -350,27 +349,27 @@ int ustawPoprzedniki(int rozMacierzPom, int punkt, Element maOrygPom[], int lbPo
         rozMacierzPom++;
     }
 
-    maOrygPom[punkt].poczatek = wartElem;
+    macierzPom[pkt].poczatek = wartElem;
 
     for(int elem = 0; elem < lbPop; elem++)
-        maOrygPom[lsPop[elem]].koniec = wartElem;
+        macierzPom[lsPop[elem]].koniec = wartElem;
 
     return rozMacierzPom;
 }
 
 
-int ustawNastepniki(int rozMacierzPom, int pkt, Element maOrygPom[], int lbNa, int lsNa[])
+int ustawNastepniki(int pkt, int lbNa, int lsNa[])
 {
-    int wartElem = maOrygPom[pkt].koniec;
+    int wartElem = macierzPom[pkt].koniec;
 
     // szukaj wartosci nastepnika
     for(int elem = 0; elem < lbNa; elem++)
     {
-        if(wartElem == -1 && maOrygPom[lsNa[elem]].poczatek != -1)
-            wartElem = maOrygPom[lsNa[elem]].poczatek;
-        else if(wartElem != -1 && maOrygPom[lsNa[elem]].poczatek != -1 && wartElem != maOrygPom[lsNa[elem]].poczatek)
+        if(wartElem == -1 && macierzPom[lsNa[elem]].poczatek != -1)
+            wartElem = macierzPom[lsNa[elem]].poczatek;
+        else if(wartElem != -1 && macierzPom[lsNa[elem]].poczatek != -1 && wartElem != macierzPom[lsNa[elem]].poczatek)
         {
-            printf("Niepoprawna wartosc wartElem=%d maOrygPo[lsNa[el]].poczatek=%d indeks maOrygPom(listaNast[elem])=%d.\n", wartElem, maOrygPom[lsNa[elem]].poczatek, lsNa[elem]);
+            printf("Niepoprawna wartosc wartElem=%d maOrygPo[lsNa[el]].poczatek=%d indeks macierzPom(listaNast[elem])=%d.\n", wartElem, macierzPom[lsNa[elem]].poczatek, lsNa[elem]);
             printf("Przerywam dzialanie programu.\n");
             exit(1);
         }
@@ -383,10 +382,10 @@ int ustawNastepniki(int rozMacierzPom, int pkt, Element maOrygPom[], int lbNa, i
         rozMacierzPom++;
     }
 
-    maOrygPom[pkt].koniec = wartElem;
+    macierzPom[pkt].koniec = wartElem;
 
     for(int elem = 0; elem < lbNa; elem++)
-        maOrygPom[lsNa[elem]].poczatek = wartElem;
+        macierzPom[lsNa[elem]].poczatek = wartElem;
 
     return rozMacierzPom;
 
@@ -429,10 +428,10 @@ void drukTab(int tryb)
             if(tryb == 1)
             {
                 if(macierz[w][k] != 0)
-                    printf ("macierz[%d][%d]=%d\n", w, k, macierz[w][k] - 1);
+                    printf (" %c -> %c (%d)\n", w + 'A', k + 'A', macierz[w][k]);
             }
             else
-                printf ("macierz[%d][%d]=%d\n", w, k, macierz[w][k]);
+                printf (" %c -> %c (%d)\n", w + 'A', k + 'A', macierz[w][k]);
 }
 
 
@@ -445,8 +444,8 @@ void drukTabOryg(int tryb)
             if(tryb == 1)
             {
                 if(macierzOryg[w][k] != 0)
-                    printf ("macierzOryg[%d][%d]=%d\n", w, k, macierzOryg[w][k]);
+                    printf (" %d -> %d (%d)\n", w , k, macierzOryg[w][k]);
             }
             else
-                printf ("macierzOryg[%d][%d]=%d\n", w, k, macierzOryg[w][k]);
+                printf (" %d -> %d (%d)\n", w, k, macierzOryg[w][k]);
 }
