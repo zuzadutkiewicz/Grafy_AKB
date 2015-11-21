@@ -79,6 +79,7 @@ int main()
     if(ret1 == 0)
         exit(1);
     generujGrafOryg();
+    drukujMacierzPom(1);
     drukTabOryg(1);
     zapiszDoPliku(nazwaPlikuDocelowego);
 
@@ -242,9 +243,6 @@ int sprawdzLin(int x,int y)
 }
 
 
-
-
-
 void generujGrafOryg()
 {
     int listaPoprz[MAX_MAC_ORYG];
@@ -256,7 +254,6 @@ void generujGrafOryg()
         macierzPom[punkt].poczatek = -1;
         macierzPom[punkt].koniec = -1;
     }
-
 
     for(int punkt = 0; punkt < rozmMacierz; punkt++)
     {
@@ -281,8 +278,6 @@ void generujGrafOryg()
         }
 
     }
-
-    drukujMacierzPom(1);
 
     macierzPomDoOryg();
 
@@ -418,6 +413,7 @@ int nastepniki(int wierzcholek, int listaNast[])
 
     return nastepny;
 }
+
 
 void drukTab(int tryb)
 {
