@@ -262,25 +262,15 @@ void generujGrafOryg()
 
         if(liczbaPoprz > 0)
             rozMacierzPom = ustawPoprzedniki( punkt,  liczbaPoprz, listaPoprz);
+        else
+            macierzPom[punkt].poczatek = rozMacierzPom++;
 
         if(liczbaNast > 0)
             rozMacierzPom = ustawNastepniki( punkt,  liczbaNast, listaNast);
-
-        if(liczbaPoprz > 0 && liczbaNast == 0 && macierzPom[punkt].koniec == -1)
-        {
-            macierzPom[punkt].koniec = rozMacierzPom;
-            rozMacierzPom++;
-        }
-        if(liczbaPoprz == 0 && liczbaNast > 0 && macierzPom[punkt].poczatek == -1)
-        {
-            macierzPom[punkt].poczatek = rozMacierzPom;
-            rozMacierzPom++;
-        }
-
+        else
+            macierzPom[punkt].koniec = rozMacierzPom++;
     }
-
     macierzPomDoOryg();
-
 }
 
 
