@@ -218,7 +218,11 @@ int czySprzez()
             else if (z == 1)
             {
                 if( sprawdzLin(x, y) == 1 )
+                {
+                    printf("Nieliniowosc na elementach x=%d (%c), y=%d (%c)\n", x,x+ 'A', y, y +'A');
                     lx = 1;
+                }
+
             }
         }
 
@@ -261,12 +265,12 @@ void generujGrafOryg()
         int liczbaNast  = nastepniki(punkt, listaNast);
 
         if(liczbaPoprz > 0)
-            rozMacierzPom = ustawPoprzedniki( punkt,  liczbaPoprz, listaPoprz);
+            rozMacierzPom = ustawPoprzedniki( punkt, liczbaPoprz, listaPoprz);
         else
             macierzPom[punkt].poczatek = rozMacierzPom++;
 
         if(liczbaNast > 0)
-            rozMacierzPom = ustawNastepniki( punkt,  liczbaNast, listaNast);
+            rozMacierzPom = ustawNastepniki( punkt, liczbaNast, listaNast);
         else
             macierzPom[punkt].koniec = rozMacierzPom++;
     }
