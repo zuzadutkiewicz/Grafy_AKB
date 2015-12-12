@@ -239,17 +239,13 @@ int czySprzez()
 int sprawdzLin(int x,int y)
 {
     int zbiorNiepusty =0;
-    // przegladanie poprzednikow - gdy niezgodne to graf nieliniowy
+    // przegladanie poprzednikow - gdy maja chociaz jeden wspolny poprzednik
+    // to graf nieliniowy
     for(int poz = 1; poz < rozmMacierz; poz++)
-        if(macierz[poz][x] != macierz[poz][y])
+        if(macierz[poz][x] == 1 && macierz[poz][y] == 1)
             return 1;
-        else if(macierz[poz][x] == 1 && macierz[poz][y] == 1)
-            zbiorNiepusty = 1;
-    // poprzedniki istnieja i sa takie same
-    if(zbiorNiepusty == 1)
-        return 0;
-    // brak poprzednikow a sa nastepniki
-    return 1;
+    // brak wspolnych poprzednikow - graf liniowy (a raczej tylko te dwa punkty)
+    return 0;
 }
 
 
